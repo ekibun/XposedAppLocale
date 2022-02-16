@@ -1,8 +1,9 @@
 package com.flo354.xposed.applocale;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import java.text.Collator;
 import java.util.Arrays;
@@ -44,38 +45,12 @@ public class LocaleList {
     private String[] localeDescriptions;
 
     public LocaleList(Context context, String defaultLabel) {
-        final String[] locales = context.getResources().getStringArray(R.array.locales);
-        Arrays.sort(locales);
+        final Locale[] locales = Locale.getAvailableLocales();
         final int origSize = locales.length;
         final LocaleInfo[] preprocess = new LocaleInfo[origSize];
         int finalSize = 0;
-        for (final String s : locales) {
-            final String localesSplit[] = s.split("-",2);
-            final String language = localesSplit[0];
-            final String country = localesSplit.length == 2 ? localesSplit[1] : "";
-            final Locale l = new Locale(language, country);
-
-            if (finalSize == 0) {
-                preprocess[finalSize++] = new LocaleInfo(toTitleCase(l.getDisplayLanguage(l)), l);
-            } else {
-                // check previous entry:
-                // same lang and a country -> upgrade to full name and
-                // insert ours with full name
-                // diff lang -> insert ours with lang-only name
-                if (preprocess[finalSize - 1].locale.getLanguage().equals(language)) {
-                    preprocess[finalSize - 1].label = toTitleCase(getDisplayName(preprocess[finalSize - 1].locale));
-                    preprocess[finalSize++] = new LocaleInfo(toTitleCase(getDisplayName(l)), l);
-                } else {
-                    String displayName;
-                    if (s.equals("zz_ZZ")) {
-                        displayName = "Pseudo...";
-                    } else {
-                        displayName = toTitleCase(l.getDisplayLanguage(l));
-                    }
-                    preprocess[finalSize++] = new LocaleInfo(displayName, l);
-                }
-            }
-
+        for (final Locale l : locales) {
+            preprocess[finalSize++] = new LocaleInfo(toTitleCase(l.getDisplayName()), l);
         }
 
         final LocaleInfo[] localeInfos = new LocaleInfo[finalSize];
@@ -87,7 +62,7 @@ public class LocaleList {
         localeCodes[0] = Common.DEFAULT_LOCALE;
         localeDescriptions[0] = defaultLabel;
         for (int i = 1; i < finalSize + 1; i++) {
-            localeCodes[i] = getLocaleCode(localeInfos[i - 1].locale);
+            localeCodes[i] = localeInfos[i - 1].locale.toLanguageTag();
             localeDescriptions[i] = localeInfos[i - 1].label;
         }
     }

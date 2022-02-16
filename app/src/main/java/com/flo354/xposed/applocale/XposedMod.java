@@ -5,8 +5,9 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build;
-import android.support.annotation.Nullable;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import java.util.Locale;
 
@@ -24,6 +25,7 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage 
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
+        Log.v("XPOSED", "local");
         loadPrefs();
 
         try {
@@ -48,13 +50,8 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage 
                             Resources res = context.getResources();
                             Configuration config = new Configuration(res.getConfiguration());
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                                config.setLocale(locale); // config.setLayoutDirection(local);
-                                context = context.createConfigurationContext(config);
-                            } else {
-                                config.locale = locale;
-                                res.updateConfiguration(config, res.getDisplayMetrics());
-                            }
+                            config.setLocale(locale); // config.setLayoutDirection(local);
+                            context = context.createConfigurationContext(config);
 
                             param.args[0] = context;
                         }
@@ -67,6 +64,8 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage 
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
+        Log.v("XPOSED", "local");
+
         prefs.reload();
 
         // Override the default Locale if one is defined (not res-related, here)
@@ -83,13 +82,7 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage 
         if (locale.contentEquals(Common.DEFAULT_LOCALE)) {
             return null;
         }
-
-        String[] localeParts = locale.split("_", 3);
-        String language = localeParts[0];
-        String region = (localeParts.length >= 2) ? localeParts[1] : "";
-        String variant = (localeParts.length >= 3) ? localeParts[2] : "";
-
-        return new Locale(language, region, variant);
+        return Locale.forLanguageTag(locale);
     }
 
     private static void loadPrefs() {
