@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -25,7 +24,6 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage 
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
-        Log.v("XPOSED", "local");
         loadPrefs();
 
         try {
@@ -64,8 +62,6 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage 
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
-        Log.v("XPOSED", "local");
-
         prefs.reload();
 
         // Override the default Locale if one is defined (not res-related, here)
@@ -78,7 +74,6 @@ public class XposedMod implements IXposedHookZygoteInit, IXposedHookLoadPackage 
     @Nullable
     private static Locale getPackageSpecificLocale(String packageName) {
         String locale = prefs.getString(packageName, Common.DEFAULT_LOCALE);
-
         if (locale.contentEquals(Common.DEFAULT_LOCALE)) {
             return null;
         }

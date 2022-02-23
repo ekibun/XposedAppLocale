@@ -134,10 +134,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    public List<AppItem> getAll() {
-        return new LinkedList<>(appItemList);
-    }
-
     public AppItem getItem(int position) {
         return appItemList.get(position);
     }
